@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="TimeService" Language="1033" Version="1.0.0.0"
+           Manufacturer="Tempus Fugit" UpgradeCode="48dc066c-97cc-4512-8fa3-52bbe195e075">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
+    <!--<UIRef Id="WixUI_Minimal" />-->
+    <UIRef Id="WixUI_Advanced" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+    <PropertyRef Id="NETFRAMEWORK40FULL"/>
+    <Condition Message="You must install .NET Framework 4.0 or higher.">
+      <![CDATA[Installed OR NETFRAMEWORK40FULL]]>
+    </Condition>
+    <Condition Message="This service requires Windows Server 2008 or higher.">
+      <![CDATA[Installed OR VersionNT >= 600]]>
+    </Condition>
+
+    <Feature Id="ProductFeature" Title="TimeService" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <WixVariable Id="WixUIBannerBmp" Value=".\images\clock.jpg"/>
+    <WixVariable Id="WixUIDialogBmp" Value=".\images\grandfatherclock.jpg"/>
+    
+    <Property Id="ApplicationFolderName" Value="TimeService"/>
+    <Property Id="WixAppFolder" Value="WixPerMachineFolder"/>              
+
+    <!-- Custom action to set WCF namespace reservation
+    Thanks to Geoff Webber for posting this solution. 
+    http://geoffwebbercross.blogspot.com/2011/08/wix-3-netsh-customaction.html
+    -->
+    <CustomAction Id="ListenerServiceDeleteReservation"
+                      Directory="APPLICATIONFOLDER" Execute="deferred" Impersonate="no"
+                      ExeCommand="[SystemFolder]netsh.exe http delete urlacl url=http://+:8080/"
+                      Return="asyncWait" />
+    <CustomAction Id="ListenerServiceAddReservation"
+                      Directory="APPLICATIONFOLDER" Execute="deferred" Impersonate="no"
+                      ExeCommand="[SystemFolder]netsh.exe http add urlacl url=http://+:8080/ sddl=D:(A;;GX;;;WD)"
+                      Return="asyncWait" />
+
+    <InstallExecuteSequence>
+      <Custom Action="ListenerServiceDeleteReservation" After="InstallInitialize">Installed</Custom>
+      <Custom Action="ListenerServiceAddReservation" After="InstallInitialize">Not Installed</Custom>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="APPLICATIONFOLDER" Name="TimeService" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="APPLICATIONFOLDER">
+      <Component Id="ProductComponent">
+        <!--<File Id="Insert dll name" Name="Insert dll name again" Source="Insert path to dll" Vital="yes" KeyPath="no" DiskId="1"/>-->
+        <File Id="TimeService.exe" Name="TimeService.exe" Source="..\TimeService\bin\$(var.Configuration)\TimeService.exe" Vital="yes" KeyPath="yes" DiskId="1"/>
+        <ServiceInstall
+					Id="ServiceInstaller"
+					Type="ownProcess"
+					Vital="yes"
+					Name="TimeService"
+					DisplayName="Tme Service"
+					Description="A simple windows service that returns the current date and time."
+					Start="auto"
+					Account="LocalSystem"
+					ErrorControl="ignore"
+					Interactive="no"
+              >
+        </ServiceInstall>
+        <ServiceControl Id="StartService" Start="install" Stop="both" Remove="uninstall" Name="TimeService" Wait="yes" />
+      </Component>
+
+      <!-- Referenced DLLs not in the GAC-->
+      <Component Id="log4net.dll">
+        <File Id="log4net.dll" Name="log4net.dll" Source="..\TimeService\bin\$(var.Configuration)\log4net.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="Newtonsoft.Json.dll">
+        <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" Source="..\TimeService\bin\$(var.Configuration)\Newtonsoft.Json.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="System.Net.Http.dll">
+        <File Id="System.Net.Http.dll" Name="System.Net.Http.dll" Source="..\TimeService\bin\$(var.Configuration)\System.Net.Http.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="System.Net.Http.Formatting.dll">
+        <File Id="System.Net.Http.Formatting.dll" Name="System.Net.Http.Formatting.dll" Source="..\TimeService\bin\$(var.Configuration)\System.Net.Http.Formatting.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="System.Net.Http.WebRequest.dll">
+        <File Id="System.Net.Http.WebRequest.dll" Name="System.Net.Http.WebRequest.dll" Source="..\TimeService\bin\$(var.Configuration)\System.Net.Http.WebRequest.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="System.Web.Http.dll">
+        <File Id="System.Web.Http.dll" Name="System.Web.Http.dll" Source="..\TimeService\bin\$(var.Configuration)\System.Web.Http.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="System.Web.Http.SelfHost.dll">
+        <File Id="System.Web.Http.SelfHost.dll" Name="System.Web.Http.SelfHost.dll" Source="..\TimeService\bin\$(var.Configuration)\System.Web.Http.SelfHost.dll" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+
+      <!-- Config files -->
+      <Component Id="TimeService.exe.config">
+        <File Id="TimeService.exe.config" Name="TimeService.exe.config" Source="..\TimeService\bin\$(var.Configuration)\TimeService.exe.config" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+      <Component Id="log4net.config">
+        <File Id="log4net.config" Name="log4net.config" Source="..\TimeService\bin\$(var.Configuration)\log4net.config" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+
+      <!-- PDB files, if needed -->
+      <Component Id="TimeService.Pdb">
+        <File Id="TimeService.pdb" Name="TimeService.pdb" Source="..\TimeService\bin\$(var.Configuration)\TimeService.pdb" Vital="yes" KeyPath="yes" DiskId="1"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+
+</Wix>
