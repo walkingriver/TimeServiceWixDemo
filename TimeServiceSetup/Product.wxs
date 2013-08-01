@@ -63,7 +63,7 @@
 					Type="ownProcess"
 					Vital="yes"
 					Name="TimeService"
-					DisplayName="Tme Service"
+					DisplayName="Time Service"
 					Description="A simple windows service that returns the current date and time."
 					Start="auto"
 					Account="LocalSystem"
