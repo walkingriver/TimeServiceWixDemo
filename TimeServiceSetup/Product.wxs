@@ -2,10 +2,14 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="TimeService" Language="1033" Version="1.0.0.0"
            Manufacturer="Tempus Fugit" UpgradeCode="48dc066c-97cc-4512-8fa3-52bbe195e075">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
+    <Package InstallerVersion="200" 
+             Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
     <!--<UIRef Id="WixUI_Minimal" />-->
     <UIRef Id="WixUI_Advanced" />
 
+    <!-- Uncomment the line below to specify a custom EULA file. It should be a simple RTF file. -->
+    <!--<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />-->
+    
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate />
     <PropertyRef Id="NETFRAMEWORK40FULL"/>
@@ -22,9 +26,9 @@
 
     <WixVariable Id="WixUIBannerBmp" Value=".\images\clock.jpg"/>
     <WixVariable Id="WixUIDialogBmp" Value=".\images\grandfatherclock.jpg"/>
-    
+
     <Property Id="ApplicationFolderName" Value="TimeService"/>
-    <Property Id="WixAppFolder" Value="WixPerMachineFolder"/>              
+    <Property Id="WixAppFolder" Value="WixPerMachineFolder"/>
 
     <!-- Custom action to set WCF namespace reservation
     Thanks to Geoff Webber for posting this solution. 
@@ -71,7 +75,12 @@
 					Interactive="no"
               >
         </ServiceInstall>
-        <ServiceControl Id="StartService" Start="install" Stop="both" Remove="uninstall" Name="TimeService" Wait="yes" />
+        <ServiceControl Id="StartService" 
+                        Start="install" 
+                        Stop="both" 
+                        Remove="uninstall" 
+                        Name="TimeService" 
+                        Wait="yes" />
       </Component>
 
       <!-- Referenced DLLs not in the GAC-->
