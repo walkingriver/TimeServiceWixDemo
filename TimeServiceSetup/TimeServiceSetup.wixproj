@@ -32,6 +32,7 @@
     <Content Include="images\grandfatherclock.jpg" />
     <Content Include="lib\WixNetFxExtension.dll" />
     <Content Include="lib\WixUIExtension.dll" />
+    <Content Include="License.rtf" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixNetFxExtension">
